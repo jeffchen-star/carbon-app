@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>碳排放計算器（1a）</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f6f6f6; max-width: 800px; margin: auto; }
+    h1 { color: #2c3e50; }
+    label { display: block; margin: 6px 0; }
+    input, select { padding: 6px; width: 120px; }
+    button { margin-top: 1em; padding: 10px 16px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+    .output { margin-top: 1em; font-size: 1.1em; }
+  </style>
+</head>
+<body>
+  <h1>📘 碳排放計算器 - 1a 製程乙炔</h1>
+  <label>GWP 版本：
+    <select id="gwp">
+      <option value="25">AR4</option>
+      <option value="28">AR5</option>
+      <option value="29.8" selected>AR6</option>
+    </select>
+  </label>
+  <div id="inputs"></div>
+  <button onclick="calculate()">計算</button>
+  <button onclick="exportCSV()">匯出 CSV</button>
+
+  <div class="output" id="output"></div>
+
+  <script>
+    const inputsDiv = document.getElementById("inputs");
+    for (let i = 1; i <= 12; i++) {
+      inputsDiv.innerHTML += `<label>${i} 月活動數據 (kg)：<input type="number" id="m${i}" value="0"></label>`;
+    }
+
+    function calculate() {
+      const gwp = parseFloat(document.getElementById("gwp").value);
+      let total = 0;
+      for (let i = 1; i <= 12; i++) {
+        const val = parseFloat(document.getElementById("m" + i).value) || 0;
+        total += val;
+      }
+      const emission = total * 1.5 * gwp;
+      document.getElementById("output").innerHTML = `🔢 年排放量估算：<strong>${emission.toFixed(2)} kg CO₂e</strong>`;
+    }
+
+    function exportCSV() {
+      const gwp = parseFloat(document.getElementById("gwp").value);
+      let csv = "月份,用量 (kg),排放係數,GWP,CO₂e排放量\n";
+      for (let i = 1; i <= 12; i++) {
+        const amount = parseFloat(document.getElementById("m" + i).value) || 0;
+        const factor = 1.5;
+        const co2e = amount * factor * gwp;
+        csv += `${i},${amount},${factor},${gwp},${co2e.toFixed(2)}\n`;
+      }
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "1a_碳排放報表.csv";
+      a.click();
+    }
+  </script>
+</body>
+</html>
